@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  api-server:
+    container_name: api-server
+    build:
+      context: .
+    working_dir: /server
+    command: uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - .env
+    volumes:
+      - .:/server
+    ports:
+      - "8000:8000"
+    restart: on-failure
