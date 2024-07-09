@@ -8,6 +8,10 @@ def test_development_config_initialization():
         MODE=Modes.DEVELOPMENT,
         VERSION="1.0",
         API_PREFIX="/api",
+        TERMS_OF_SERVICE="https://example.com",
+        MAINTAINER_NAME="Test Maintainer",
+        MAINTAINER_ONLINE_PROFILE="https://example.com",
+        MAINTAINER_EMAIL="admin@example.com",
     )
 
     # Check inherited attributes

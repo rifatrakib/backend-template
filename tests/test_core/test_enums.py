@@ -1,6 +1,6 @@
 import pytest
 
-from server.core.enums import Modes
+from server.core.enums import Modes, Tags
 
 
 def test_modes_enum():
@@ -14,3 +14,9 @@ def test_modes_enum():
 
     with pytest.raises(ValueError):
         Modes("invalid")
+
+
+def test_tags_enum():
+    assert Tags.HEALTH_CHECK.value == "Health Check"
+    with pytest.raises(ValueError):
+        Tags("INVALID")
