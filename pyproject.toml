@@ -17,6 +17,7 @@ passlib = {extras = ["argon2", "bcrypt"], version = "^1.7.4"}
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 fastapi-mail = "^1.4.1"
 fastapi-sso = "^0.15.0"
+inflection = "^0.5.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.1"
