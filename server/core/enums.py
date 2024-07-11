@@ -1,6 +1,12 @@
 from enum import Enum
 
 
+class EnvSources(str, Enum):
+    DOTENV = ".env"
+    JSON = "json"
+    YAML = "yaml"
+
+
 class Databases(str, Enum):
     MONGODB = "mongodb"
     POSTGRESQL = "postgresql"
