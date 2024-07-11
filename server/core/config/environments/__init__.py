@@ -1,9 +1,10 @@
 from pydantic import EmailStr, HttpUrl, field_validator
 
+from server.core.config.db_config import DatabaseConfig
 from server.core.config.sources import ConfigSource
 
 
-class AppConfig(ConfigSource):
+class AppConfig(ConfigSource, DatabaseConfig):
     APP_NAME: str
     VERSION: str
     API_PREFIX: str

@@ -1,6 +1,12 @@
 from enum import Enum
 
 
+class Databases(str, Enum):
+    MONGODB = "mongodb"
+    POSTGRESQL = "postgresql"
+    REDIS = "redis"
+
+
 class Modes(str, Enum):
     DEVELOPMENT = "development"
     STAGING = "staging"

@@ -59,6 +59,9 @@ class PydanticJSONType(TypeDecorator):
         self.model = model
         super().__init__(*args, **kwargs)
 
+    def load_dialect_impl(self, dialect):
+        return dialect.type_descriptor(JSON())
+
     def process_bind_param(self, value, dialect):
         if value is not None:
             return value.model_dump()
@@ -66,5 +69,5 @@ class PydanticJSONType(TypeDecorator):
 
     def process_result_value(self, value, dialect):
         if value is not None:
-            return self.model(**value)
+            return self.model.model_validate(value)
         return value

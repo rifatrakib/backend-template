@@ -103,7 +103,7 @@ class Group(Base):
     )
     accounts: Mapped[list["Account"]] = relationship(
         "Account",
-        secondary="group_account",
+        secondary="group_accounts",
         back_populates="groups",
         order_by="Account.id",
     )
