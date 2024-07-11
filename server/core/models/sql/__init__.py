@@ -1,10 +1,13 @@
 from datetime import datetime
 
 import inflection
-from sqlalchemy import DateTime, ForeignKey, Integer, event
-from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column, relationship
+from pydantic import BaseModel
+from sqlalchemy import DateTime, Integer, event
+from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 from sqlalchemy.schema import FetchedValue
 from sqlalchemy.sql import functions
+from sqlalchemy.types import TypeDecorator
 
 
 class Base(DeclarativeBase):
@@ -17,7 +20,6 @@ class Base(DeclarativeBase):
 
     __mapper_args__ = {"eager_defaults": True}
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement="auto")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -40,33 +42,6 @@ class Base(DeclarativeBase):
         default=1,
     )
 
-    @declared_attr
-    def creator_id(cls) -> Mapped[int]:
-        return mapped_column(Integer, ForeignKey("accounts.id"), nullable=True)
-
-    @declared_attr
-    def last_updator_id(cls) -> Mapped[int]:
-        return mapped_column(Integer, ForeignKey("accounts.id"), nullable=True)
-
-    @declared_attr
-    def deletor_id(cls) -> Mapped[int]:
-        return mapped_column(Integer, ForeignKey("accounts.id"), nullable=True)
-
-    @declared_attr
-    def created_by(cls) -> Mapped["Account"]:  # noqa: F821
-        return relationship("Account", foreign_keys=[cls.creator_id])
-
-    @declared_attr
-    def last_updated_by(cls) -> Mapped["Account"]:  # noqa: F821
-        return relationship("Account", foreign_keys=[cls.last_updator_id])
-
-    @declared_attr
-    def deleted_by(cls) -> Mapped["Account"]:  # noqa: F821
-        return relationship("Account", foreign_keys=[cls.deletor_id])
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}(id={self.id})>"
-
     @classmethod
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -75,3 +50,21 @@ class Base(DeclarativeBase):
     @staticmethod
     def _increment_revision_id(mapper, connection, target):
         target.revision_id += 1
+
+
+class PydanticJSONType(TypeDecorator):
+    impl = JSON
+
+    def __init__(self, model: BaseModel, *args, **kwargs):
+        self.model = model
+        super().__init__(*args, **kwargs)
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            return value.model_dump()
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return self.model(**value)
+        return value

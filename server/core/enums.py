@@ -9,3 +9,13 @@ class Modes(str, Enum):
 
 class Tags(str, Enum):
     HEALTH_CHECK = "Health Check"
+
+
+class Providers(str, Enum):
+    GOOGLE = "google"
+    GITHUB = "github"
+
+
+class Genders(str, Enum):
+    MALE = "m"
+    FEMALE = "f"
