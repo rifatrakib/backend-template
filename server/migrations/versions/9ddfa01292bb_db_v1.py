@@ -1,8 +1,8 @@
 """db_v1.
 
-Revision ID: ddac9f49a4ef
+Revision ID: 9ddfa01292bb
 Revises:
-Create Date: 2024-07-11 22:12:28.618038
+Create Date: 2024-07-12 14:02:49.185858
 """
 
 from typing import Sequence
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "ddac9f49a4ef"  # pragma: allowlist secret
+revision: str = "9ddfa01292bb"  # pragma: allowlist secret
 down_revision: str | None = None  # pragma: allowlist secret
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -22,8 +22,8 @@ def upgrade() -> None:
     op.create_table(
         "accounts",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("username", sa.String(length=64), nullable=True),
-        sa.Column("email", sa.String(length=256), nullable=True),
+        sa.Column("username", sa.String(length=64), nullable=False),
+        sa.Column("email", sa.String(length=256), nullable=False),
         sa.Column("open_id", sa.String(length=256), nullable=True),
         sa.Column("_provider", sa.String(length=16), nullable=True),
         sa.Column("_hashed_password", sa.String(length=1024), nullable=True),

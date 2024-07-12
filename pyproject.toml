@@ -60,7 +60,7 @@ skip_gitignore = true
 line-length = 140
 exclude = [".git", "__pycache__", "dist"]
 target-version = "py312"
-ignore = ["F821"]
+lint.ignore = ["F821"]
 # Allow unused variables when underscore-prefixed.
 lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 

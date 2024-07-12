@@ -9,8 +9,8 @@ from server.core.models.sql import Base
 
 class Account(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement="auto")
-    username: Mapped[str] = mapped_column(String(length=64), nullable=True, unique=True, index=True)
-    email: Mapped[str] = mapped_column(String(length=256), nullable=True, unique=True, index=True)
+    username: Mapped[str] = mapped_column(String(length=64), nullable=False, unique=True, index=True)
+    email: Mapped[str] = mapped_column(String(length=256), nullable=False, unique=True, index=True)
     open_id: Mapped[str] = mapped_column(String(length=256), nullable=True, index=True)
     _provider: Mapped[str] = mapped_column(String(length=16), nullable=True, index=True)
     _hashed_password: Mapped[str] = mapped_column(String(length=1024), nullable=True)
