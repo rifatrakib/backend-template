@@ -14,3 +14,28 @@ services:
     ports:
       - "8000:8000"
     restart: on-failure
+    networks:
+      - private_network
+      - public_network
+    depends_on:
+      - cache-server
+
+  cache-server:
+    container_name: cache-server
+    image: dph5199278/dragonflydb:latest
+    env_file:
+      - .env
+    ports:
+      - "6379:6379"
+    volumes:
+      - dragonfly-data:/data
+    restart: on-failure
+    networks:
+      - private_network
+
+networks:
+  private_network:
+  public_network:
+
+volumes:
+  dragonfly-data:

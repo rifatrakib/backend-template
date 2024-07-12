@@ -59,7 +59,6 @@ class AccountSchema(BaseSchema):
     created_at: datetime = Field(description="Account creation timestamp")
     last_updated_at: datetime | None = Field(default=None, description="Last account update timestamp")
     delete_at: datetime | None = Field(default=None, description="Account deletion initiation timestamp")
-    revision_id: int = Field(description="Account revision ID", ge=1)
     groups: list[GroupSchema] = Field(default_factory=list, description="List of groups this account belongs to")
     roles: list[RoleSchema] = Field(default_factory=list, description="List of roles assigned to this account")
     permissions: list[PermissionSchema] = Field(
