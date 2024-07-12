@@ -11,7 +11,7 @@ fastapi = {extras = ["all"], version = "^0.111.0"}
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.31"}
 asyncpg = "^0.29.0"
 alembic = "^1.13.2"
-beanie = "^1.26.0"
+beanie = {extras = ["queue"], version = "^1.26.0"}
 redis = "^5.0.7"
 passlib = {extras = ["argon2", "bcrypt"], version = "^1.7.4"}
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}

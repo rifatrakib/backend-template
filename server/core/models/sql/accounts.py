@@ -1,11 +1,10 @@
 from datetime import date
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, String, UniqueConstraint, event
+from sqlalchemy import Boolean, Date, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from server.core.enums import Genders, Providers
-from server.core.models.sql import Base, PydanticJSONType
-from server.core.models.sql.schemas import HistoryDataSchema
+from server.core.models.sql import Base
 
 
 class Account(Base):
@@ -45,7 +44,6 @@ class Account(Base):
         back_populates="accounts",
         order_by="Permission.object_name, Permission.action",
     )
-    histories: Mapped[list["History"]] = relationship("History", back_populates="account")
 
     @property
     def provider(self) -> Providers:
@@ -219,28 +217,3 @@ class PermissionAccount(Base):
         nullable=False,
         primary_key=True,
     )
-
-
-class History(Base):
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement="auto")
-    table_name: Mapped[str] = mapped_column(String(length=64), nullable=False)
-    row_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    operation: Mapped[str] = mapped_column(String(length=16), nullable=False)
-    data: Mapped[HistoryDataSchema] = mapped_column(PydanticJSONType(HistoryDataSchema), nullable=False)
-    initiator_id: Mapped[HistoryDataSchema] = mapped_column(Integer, nullable=False)
-
-    account_id: Mapped[int] = mapped_column(
-        ForeignKey("accounts.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
-    )
-
-    account: Mapped[Account] = relationship(Account, back_populates="histories")
-
-    @classmethod
-    def _before_update_listener(cls, mapper, connection, target):
-        raise Exception("Updates are not allowed for this table")
-
-    @classmethod
-    def __declare_last__(cls):
-        event.listen(cls, "before_update", cls._before_update_listener)

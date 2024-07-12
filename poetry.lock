@@ -228,6 +228,7 @@ files = [
 ]
 
 [package.dependencies]
+beanie-batteries-queue = {version = ">=0.2", optional = true, markers = "extra == \"queue\""}
 click = ">=7"
 lazy-model = "0.2.0"
 motor = ">=2.5.0,<4.0.0"
@@ -238,6 +239,23 @@ toml = "*"
 doc = ["Markdown (>=3.3)", "Pygments (>=2.8.0)", "jinja2 (>=3.0.3)", "mkdocs (>=1.4)", "mkdocs-material (>=9.0)", "pydoc-markdown (>=4.8)"]
 queue = ["beanie-batteries-queue (>=0.2)"]
 test = ["asgi-lifespan (>=1.0.1)", "dnspython (>=2.1.0)", "fastapi (>=0.100)", "flake8 (>=3)", "httpx (>=0.23.0)", "pre-commit (>=2.3.0)", "pydantic-extra-types (>=2)", "pydantic-settings (>=2)", "pydantic[email]", "pyright (>=0)", "pytest (>=6.0.0)", "pytest-asyncio (>=0.21.0)", "pytest-cov (>=2.8.1)"]
+
+[[package]]
+name = "beanie-batteries-queue"
+version = "0.4.0"
+description = "Advanced queue system for MongoDB with Beanie ODM"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "beanie_batteries_queue-0.4.0-py3-none-any.whl", hash = "sha256:dfb5653532b1a1d6d26544fd9373d3a2e266d29bd3b612ccc0a2713f80e879a0"},
+    {file = "beanie_batteries_queue-0.4.0.tar.gz", hash = "sha256:a5f548a2f040ca1737b239e2052316e331b491f36487578712d8e0525d2ecfcb"},
+]
+
+[package.dependencies]
+beanie = ">=1.23.4"
+
+[package.extras]
+test = ["dnspython (>=2.1.0)", "flake8 (>=3)", "pre-commit (>=2.3.0)", "pydantic-settings (>=2.0)", "pyright (>=0)", "pytest (>=6.0.0)", "pytest-asyncio (>=0.21.0)", "pytest-cov (>=2.8.1)"]
 
 [[package]]
 name = "black"
@@ -2355,4 +2373,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "73ca174b48e905530e75539ecec418232b76f12e8bbbacb4441b722b7790a135"
+content-hash = "9c58f867a88dc992d42b4095aafe582a57bf510f689bcd2e2f22f3e4b29b3f00"

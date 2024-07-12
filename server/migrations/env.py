@@ -7,7 +7,6 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from server.core.config import settings
-from server.core.models.sql import PydanticJSONType
 from server.core.models.sql.accounts import Account
 
 # this is the Alembic Config object, which provides
@@ -34,13 +33,6 @@ section = config.config_ini_section
 config.set_section_option(section, "RDS_URI", settings.RDS_URI)
 
 
-def render_item(type_, obj, autogen_context):
-    """Apply custom rendering for PydanticType."""
-    if type_ == "type" and isinstance(obj, PydanticJSONType):
-        return "sa.dialects.postgresql.JSON()"
-    return False
-
-
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -57,7 +49,6 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        render_item=render_item,
     )
 
     with context.begin_transaction():

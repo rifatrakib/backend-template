@@ -1,13 +1,10 @@
 from datetime import datetime
 
 import inflection
-from pydantic import BaseModel
 from sqlalchemy import DateTime, Integer, event
-from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 from sqlalchemy.schema import FetchedValue
 from sqlalchemy.sql import functions
-from sqlalchemy.types import TypeDecorator
 
 
 class Base(DeclarativeBase):
@@ -50,24 +47,3 @@ class Base(DeclarativeBase):
     @staticmethod
     def _increment_revision_id(mapper, connection, target):
         target.revision_id += 1
-
-
-class PydanticJSONType(TypeDecorator):
-    impl = JSON
-
-    def __init__(self, model: BaseModel, *args, **kwargs):
-        self.model = model
-        super().__init__(*args, **kwargs)
-
-    def load_dialect_impl(self, dialect):
-        return dialect.type_descriptor(JSON())
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            return value.model_dump()
-        return value
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            return self.model.model_validate(value)
-        return value

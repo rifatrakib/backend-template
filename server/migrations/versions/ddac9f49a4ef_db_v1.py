@@ -1,8 +1,8 @@
 """db_v1.
 
-Revision ID: d0e0df6c8246
+Revision ID: ddac9f49a4ef
 Revises:
-Create Date: 2024-07-11 17:11:49.589484
+Create Date: 2024-07-11 22:12:28.618038
 """
 
 from typing import Sequence
@@ -10,11 +10,8 @@ from typing import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-from server.core.models.sql import PydanticJSONType
-from server.core.models.sql.schemas import HistoryDataSchema
-
 # revision identifiers, used by Alembic.
-revision: str = "d0e0df6c8246"  # pragma: allowlist secret
+revision: str = "ddac9f49a4ef"  # pragma: allowlist secret
 down_revision: str | None = None  # pragma: allowlist secret
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -112,23 +109,6 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("group_id", "role_id"),
     )
     op.create_table(
-        "histories",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("table_name", sa.String(length=64), nullable=False),
-        sa.Column("row_id", sa.Integer(), nullable=False),
-        sa.Column("operation", sa.String(length=16), nullable=False),
-        sa.Column("data", PydanticJSONType(HistoryDataSchema), nullable=False),
-        sa.Column("initiator_id", sa.Integer(), nullable=False),
-        sa.Column("account_id", sa.Integer(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("delete_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("revision_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["account_id"], ["accounts.id"], ondelete="SET NULL"),
-        sa.PrimaryKeyConstraint("id"),
-    )
-    op.create_index(op.f("ix_histories_account_id"), "histories", ["account_id"], unique=False)
-    op.create_table(
         "permission_accounts",
         sa.Column("permission_id", sa.Integer(), nullable=False),
         sa.Column("account_id", sa.Integer(), nullable=False),
@@ -172,8 +152,6 @@ def downgrade() -> None:
     op.drop_table("role_permissions")
     op.drop_table("role_accounts")
     op.drop_table("permission_accounts")
-    op.drop_index(op.f("ix_histories_account_id"), table_name="histories")
-    op.drop_table("histories")
     op.drop_table("group_roles")
     op.drop_table("group_accounts")
     op.drop_index(op.f("ix_roles_name"), table_name="roles")
