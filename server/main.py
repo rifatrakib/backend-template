@@ -1,13 +1,15 @@
 from fastapi import FastAPI
 
-from server.core.config import settings
+from server.core.documentation.openapi import configure_openapi
+from server.core.schemas.utilities import OpenAPIConfig
+from server.events.service_registry import register_routers
 
-app: FastAPI = FastAPI()
+
+def configure_app() -> FastAPI:
+    api_config: OpenAPIConfig = configure_openapi()
+    app = FastAPI(**api_config.model_dump())
+    register_routers(app)
+    return app
 
 
-@app.get(
-    "/health",
-)
-async def health():
-    print(settings)
-    return {"status": "ok"}
+app: FastAPI = configure_app()

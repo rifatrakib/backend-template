@@ -5,7 +5,7 @@ from beanie import Document, Granularity, TimeSeriesConfig
 from pydantic import Field
 
 from server.core.config import settings
-from server.core.models.mongodb.schemas import MetadataField
+from server.core.schemas.utilities import MetadataField
 
 
 class BaseDocument(Document):

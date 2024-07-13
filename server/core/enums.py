@@ -21,6 +21,11 @@ class Modes(str, Enum):
 
 class Tags(str, Enum):
     HEALTH_CHECK = "Health Check"
+    AUTHENTICATION = "Authentication"
+
+
+class Versions(str, Enum):
+    VERSION_1 = "Version 1"
 
 
 class Providers(str, Enum):

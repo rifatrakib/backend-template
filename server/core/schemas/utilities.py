@@ -13,7 +13,7 @@ class APIConfig(BaseSchema):
     title: str
     description: str
     version: str
-    terms_of_service: HttpUrl
+    terms_of_service: str
     contact: Contact
     openapi_url: str
     docs_url: str
@@ -36,3 +36,12 @@ class OpenAPITags(BaseSchema):
 
 class OpenAPIConfig(APIConfig):
     tags_metadata: list[OpenAPITags] = Field(default_factory=list)
+
+
+class MetadataField(BaseSchema):
+    environment: str
+    source: str
+
+
+class MessageResponse(BaseSchema):
+    msg: str

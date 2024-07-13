@@ -1,12 +1,9 @@
 from pathlib import Path
 
-from starlette.routing import BaseRoute
-
 from server.core.config import settings
 from server.core.enums import Tags
+from server.core.schemas.utilities import APIConfig, Contact, ExternalDocs, OpenAPIConfig, OpenAPITags
 from server.core.utils import validate_file
-
-from .schemas import APIConfig, Contact, ExternalDocs, OpenAPIConfig, OpenAPITags
 
 
 def api_configuration_options() -> APIConfig:
@@ -18,7 +15,7 @@ def api_configuration_options() -> APIConfig:
             title=settings.APP_NAME,
             description=description,
             version=settings.VERSION,
-            terms_of_service=settings.TERMS_OF_SERVICE,
+            terms_of_service=str(settings.TERMS_OF_SERVICE),
             contact=Contact(
                 name=settings.MAINTAINER_NAME,
                 url=settings.MAINTAINER_ONLINE_PROFILE,
@@ -46,9 +43,3 @@ def configure_openapi() -> OpenAPIConfig:
         ),
     ]
     return OpenAPIConfig(**api_config.model_dump(), tags_metadata=tags_metadata)
-
-
-def add_endpoint_description(route: BaseRoute, python_path: str) -> None:
-    directory = python_path.replace(".", "/")
-    with open(f"{directory}/documentation/{route.name}.md") as reader:
-        route.description = reader.read()
