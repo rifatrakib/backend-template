@@ -11,7 +11,7 @@ app = Typer()
 
 @app.command(name="app")
 def generate_new_app(
-    name: str = Option(..., prompt=True, help="Name of the new app"),
+    name: str = Option(..., prompt="Name your app", help="Name of the new app"),
 ):
     if not is_valid_service(name):
         typer.echo(f"{name} app already exists. This command will overwrite the existing app and may not be reversible.")
