@@ -26,7 +26,8 @@ async def add_endpoint_description(route: BaseRoute, python_path: str, version: 
 
 
 def validate_tags(route: BaseRoute) -> None:
-    if not all(item in enum_class.__members__.values() for enum_class in [Tags, Versions] for item in route.tags):
+    valid_tags = list(Tags.__members__.values()) + list(Versions.__members__.values())
+    if not all([tag in valid_tags for tag in route.tags]):
         raise ValueError(f"Invalid tags in {route.name} in {route.path}. Please use the Tags and Versions enums for tags")
 
 
