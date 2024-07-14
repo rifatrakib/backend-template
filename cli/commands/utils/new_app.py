@@ -4,7 +4,7 @@ from pathlib import Path
 from server.core.config import settings
 
 
-def read_init_file_contents(name: str) -> str:
+def init_file_contents(name: str) -> str:
     contents = f"""from fastapi import APIRouter
 
 from server.core.enums import Versions
@@ -22,7 +22,7 @@ def create_router():
     return contents
 
 
-def read_v1_file_contents(name: str) -> str:
+def v1_file_contents(name: str) -> str:
     contents = f"""from fastapi import APIRouter
 
 from server.core.enums import Tags
@@ -51,7 +51,7 @@ def create_router():
     return contents
 
 
-def read_check_route_doc_contents(name: str) -> str:
+def check_route_doc_contents(name: str) -> str:
     with open("cli/commands/templates/new-app-check.md") as f:
         contents = f.read()
 
@@ -66,14 +66,14 @@ def make_new_app_files(name: str, directory: Path) -> None:
     # Create the __init__.py file
     init_file = Path(f"{directory}/__init__.py")
 
-    init_file.write_text(read_init_file_contents(name))
+    init_file.write_text(init_file_contents(name))
 
     # Create the v1.py file
     v1_file = Path(f"{directory}/v1.py")
-    v1_file.write_text(read_v1_file_contents(name))
+    v1_file.write_text(v1_file_contents(name))
 
     check_doc_file = Path(f"{directory}/docs/v1/check_{name}_service.md")
-    check_doc_file.write_text(read_check_route_doc_contents(name))
+    check_doc_file.write_text(check_route_doc_contents(name))
 
 
 def is_valid_service(name: str) -> bool:

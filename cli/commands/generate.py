@@ -4,6 +4,7 @@ import typer
 from typer import Option, Typer
 
 from cli.commands.utils.new_app import is_valid_service, make_new_app_files
+from cli.commands.utils.new_endpoint import append_new_endpoint_contents
 
 app = Typer()
 
@@ -33,3 +34,52 @@ def generate_new_app(
 
     # Create and write the files for the new app
     make_new_app_files(name, directory)
+
+
+@app.command(name="endpoint")
+def generate_endpoint(
+    app: str = Option(
+        ...,
+        prompt="Name of the app where the endpoint will be created",
+        help="Name of the app where the endpoint will be created",
+    ),
+    version: str = Option(
+        "v1", prompt="Version of the app where the endpoint will be created", help="Version of the app where the endpoint will be created"
+    ),
+    endpoint: str = Option(
+        "",
+        prompt="Name of the new endpoint",
+        help="Name of the new endpoint",
+    ),
+    method: str = Option(
+        "GET",
+        prompt="HTTP method for the endpoint",
+        help="HTTP method for the endpoint",
+    ),
+    summary: str = Option(
+        "",
+        prompt="Summary of the endpoint",
+        help="Summary of the endpoint",
+    ),
+    response_description: str = Option(
+        "",
+        prompt="Response description of the endpoint",
+        help="Response description of the endpoint",
+    ),
+    handler: str = Option(
+        ...,
+        prompt="Name of the endpoint handler function",
+        help="Name of the endpoint handler function",
+    ),
+):
+    if is_valid_service(app):
+        typer.echo(f"{app} app does not exist. Please create the app first.")
+        return
+
+    if endpoint:
+        if endpoint == "/":
+            endpoint = ""
+        else:
+            endpoint = f"/{endpoint}" if not endpoint.startswith("/") else endpoint
+
+    append_new_endpoint_contents(app, version, endpoint, method, summary, response_description, handler)
