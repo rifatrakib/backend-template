@@ -11,12 +11,12 @@ def create_router():
     )
 
     @router.get(
-        "/check",
-        summary="Check if the health service is up and running",
-        response_description="Health service status",
+        "",
+        summary="Check if the application is up and running",
+        response_description="Application health check",
         response_model=MessageResponse,
     )
     async def check_health_service():
-        return {"msg": "Health service is up and running!"}
+        return {"msg": "The application is up and running!"}
 
     return router

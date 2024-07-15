@@ -1,0 +1,13 @@
+## Give endpoint docs header here....
+
+### Overview
+
+Write overview for the endpoint here containing the crucial information about this endpoint's architecture and usage....
+
+### Details
+
+Add descriptive details about the endpoint in this section....
+
+### Notes
+
+* Add any notes you want to emphasize to the client here....
