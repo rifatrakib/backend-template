@@ -9,6 +9,7 @@ class AppConfig(ConfigSource, DatabaseConfig):
     VERSION: str
     API_PREFIX: str
     TERMS_OF_SERVICE: HttpUrl
+    TEST_RUN: bool
 
     # Maintainer Contact
     MAINTAINER_NAME: str
