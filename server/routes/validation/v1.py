@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from server.controllers.validation.v1 import validate_email_controller
 from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
 from server.dependencies.clients import get_session
 from server.dependencies.fields import email_field
-from server.repositories.auth.read import get_account_by_email
 from server.schemas.responses.validation import ValidationResponse
 
 
@@ -39,11 +39,7 @@ def create_router():
         session: Annotated[AsyncSession, Depends(get_session)],
     ) -> ValidationResponse:
         try:
-            account = await get_account_by_email(session, email)
-            return {
-                "is_valid": account is None,
-                "prompt": "Email is available for signup.",
-            }
+            return await validate_email_controller(session, email)
         except HTTPException as e:
             raise e
 
