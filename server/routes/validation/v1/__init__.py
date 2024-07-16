@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from server.controllers.validation.v1 import validate_email_controller
 from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
 from server.dependencies.clients import get_session
 from server.dependencies.fields import email_field
+from server.routes.validation.v1 import controllers
 from server.schemas.responses.validation import ValidationResponse
 
 
@@ -26,7 +26,10 @@ def create_router():
         response_model=MessageResponse,
     )
     async def check_validation_service():
-        return {"msg": "Validation service is up and running!"}
+        try:
+            return await controllers.check_validation_service()
+        except HTTPException as e:
+            raise e
 
     @router.get(
         "/accounts/email",
@@ -39,7 +42,7 @@ def create_router():
         session: Annotated[AsyncSession, Depends(get_session)],
     ) -> ValidationResponse:
         try:
-            return await validate_email_controller(session, email)
+            return await controllers.validate_email(session, email)
         except HTTPException as e:
             raise e
 

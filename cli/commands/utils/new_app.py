@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from server.core.config import settings
@@ -23,10 +22,11 @@ def create_router():
 
 
 def v1_file_contents(name: str) -> str:
-    contents = f"""from fastapi import APIRouter
+    contents = f"""from fastapi import APIRouter, HTTPException
 
 from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
+from server.routes.{name}.v1 import controllers
 
 
 def create_router():
@@ -42,10 +42,24 @@ def create_router():
         tags=[Tags.HEALTH_CHECK],
         response_model=MessageResponse,
     )
-    async def check_{name}_service():
-        return {json.dumps({"msg": f"{name.capitalize()} service is up and running!"})}
+    async def check_{name}_service() -> MessageResponse:
+        try:
+            return await controllers.check_{name}_service()
+        except HTTPException as e:
+            raise e
 
     return router
+"""
+
+    return contents
+
+
+def controller_file_contents(name: str) -> str:
+    contents = f"""from server.core.schemas.utilities import MessageResponse
+
+
+async def check_{name}_service() -> MessageResponse:
+    return MessageResponse(msg="{name.capitalize()} service is up and running!")
 """
 
     return contents
@@ -68,11 +82,18 @@ def make_new_app_files(name: str, directory: Path) -> None:
 
     init_file.write_text(init_file_contents(name))
 
-    # Create the v1.py file
-    v1_file = Path(f"{directory}/v1.py")
+    # Create the v1 directory for the first version of the app routes
+    v1_directory = Path(f"{directory}/v1")
+    v1_directory.mkdir(parents=True, exist_ok=True)
+    v1_file = Path(f"{v1_directory}/__init__.py")
     v1_file.write_text(v1_file_contents(name))
+    controller_file = Path(f"{v1_directory}/controllers.py")
+    controller_file.write_text(controller_file_contents(name))
 
-    check_doc_file = Path(f"{directory}/docs/v1/check_{name}_service.md")
+    # Create the docs directory for the first version of the app routes
+    docs_directory = Path(f"{v1_directory}/docs")
+    docs_directory.mkdir(parents=True, exist_ok=True)
+    check_doc_file = Path(f"{docs_directory}/check_{name}_service.md")
     check_doc_file.write_text(check_route_doc_contents(name))
 
 

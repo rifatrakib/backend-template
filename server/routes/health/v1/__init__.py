@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
+from server.routes.health.v1 import controllers
 
 
 def create_router():
@@ -17,6 +18,9 @@ def create_router():
         response_model=MessageResponse,
     )
     async def check_health_service():
-        return {"msg": "The application is up and running!"}
+        try:
+            return await controllers.check_health_service()
+        except HTTPException as e:
+            raise e
 
     return router

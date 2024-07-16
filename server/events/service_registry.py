@@ -15,7 +15,7 @@ async def add_endpoint_description(route: BaseRoute, python_path: str, version: 
     # documentation is stored in a markdown file (can be generated using CLI)
     # with the same name as the endpoint handler function name
     # in a folder named after the version of the API inside the `docs` folder of the service
-    async with aiofiles.open(f"{directory}/docs/{version}/{route.name}.md") as reader:
+    async with aiofiles.open(f"{directory}/{version}/docs/{route.name}.md") as reader:
         description = await reader.read()
 
     # Enforce that the description is not empty

@@ -23,15 +23,6 @@ def generate_new_app(
     directory = Path(f"server/routes/{name}")
     directory.mkdir(parents=True, exist_ok=True)
 
-    # Create the __init__.py file in server/routes if it doesn't exist
-    init_file = Path("server/routes/__init__.py")
-    if not init_file.exists():
-        init_file.touch()
-
-    # Create the docs directory for the first version of the app routes
-    docs_directory = Path(f"{directory}/docs/v1")
-    docs_directory.mkdir(parents=True, exist_ok=True)
-
     # Create and write the files for the new app
     make_new_app_files(name, directory)
 

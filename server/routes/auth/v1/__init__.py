@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
 from server.dependencies.form import signup_form
+from server.routes.auth.v1 import controllers
 from server.schemas.requests.auth import SignupRequest
 
 
@@ -21,8 +22,11 @@ def create_router():
         tags=[Tags.HEALTH_CHECK],
         response_model=MessageResponse,
     )
-    async def check_auth_service():
-        return {"msg": "Auth service is up and running!"}
+    async def check_auth_service() -> MessageResponse:
+        try:
+            return await controllers.check_auth_service()
+        except HTTPException as e:
+            raise e
 
     @router.post(
         "/signup",
@@ -30,6 +34,9 @@ def create_router():
         response_description="Registration successful message",
     )
     async def register_user(payload: Annotated[SignupRequest, Depends(signup_form)]):
-        return payload
+        try:
+            return await controllers.register_user(payload)
+        except HTTPException as e:
+            raise e
 
     return router
