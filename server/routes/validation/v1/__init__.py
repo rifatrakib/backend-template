@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
 from server.dependencies.clients import get_session
-from server.dependencies.fields import email_field
+from server.dependencies.fields import email_field, username_field
 from server.routes.validation.v1 import controllers
 from server.schemas.responses.validation import ValidationResponse
 
@@ -43,6 +43,21 @@ def create_router():
     ) -> ValidationResponse:
         try:
             return await controllers.validate_email(session, email)
+        except HTTPException as e:
+            raise e
+
+    @router.get(
+        "/accounts/username",
+        response_model=ValidationResponse,
+        summary="Validate if the username is available to be used for signup.",
+        response_description="Availability of username.",
+    )
+    async def validate_username(
+        username: Annotated[str, username_field(Query, alias="q")],
+        session: Annotated[AsyncSession, Depends(get_session)],
+    ) -> ValidationResponse:
+        try:
+            return await controllers.validate_username(session, username)
         except HTTPException as e:
             raise e
 
