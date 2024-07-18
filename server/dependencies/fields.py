@@ -49,3 +49,27 @@ def name_field(Function: Callable[..., FieldInfo], position: str, **kwargs) -> F
         },
         **kwargs,
     )
+
+
+def gender_field(Function: Callable[..., FieldInfo], **kwargs) -> FieldInfo:
+    return Function(
+        title="Gender",
+        description="Gender of the user (m: male, f: female).",
+        openapi_examples={
+            "valid": {"summary": "Valid gender", "value": "m"},
+            "invalid": {"summary": "Invalid gender", "value": "o"},
+        },
+        **kwargs,
+    )
+
+
+def birthdate_field(Function: Callable[..., FieldInfo], **kwargs) -> FieldInfo:
+    return Function(
+        title="Birthdate",
+        description="The birthdate of the user in the format of YYYY-MM-DD.",
+        openapi_examples={
+            "valid": {"summary": "Valid birthdate", "value": "2000-01-01"},
+            "invalid": {"summary": "Invalid birthdate", "value": "2000-01"},
+        },
+        **kwargs,
+    )

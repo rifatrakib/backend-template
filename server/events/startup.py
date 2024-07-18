@@ -1,5 +1,6 @@
 import subprocess
 from contextlib import asynccontextmanager
+from typing import Type
 
 from aredis_om import Migrator
 from beanie import init_beanie
@@ -9,14 +10,36 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from server.core.config import settings
 from server.core.models.mongodb.accounts import AccountCache
 from server.events.service_registry import register_routers
+from server.models.mongodb.events import ChangeLog, RequestLog
 from server.schemas.requests.auth import SignupRequest
 
 
-async def run_migrations():
+async def run_migrations() -> None:
     subprocess.run("alembic upgrade head", shell=True)
 
 
-def customize_form_data(app: FastAPI):
+def mongodb_collections() -> list[Type]:
+    return [
+        AccountCache,
+        ChangeLog,
+        RequestLog,
+    ]
+
+
+async def initialize_mongodb() -> None:
+    client = AsyncIOMotorClient(settings.MONGO_URI)
+    targets = {}
+    for collection in mongodb_collections():
+        database = collection.__module__.split(".")[-1]
+        if database not in targets:
+            targets[database] = {"database": client[database], "document_models": []}
+        targets[database]["document_models"].append(collection)
+
+    for target in targets.values():
+        await init_beanie(**target)
+
+
+def customize_form_data(app: FastAPI) -> None:
     openapi_schema = app.openapi()
     schemas = openapi_schema["components"]["schemas"]
 
@@ -35,11 +58,7 @@ async def app_startup(app: FastAPI):
         await run_migrations()
 
         # Connect to MongoDB
-        client = AsyncIOMotorClient(settings.MONGO_URI)
-        await init_beanie(
-            database=client["test"],
-            document_models=[AccountCache],
-        )
+        await initialize_mongodb()
 
         # Connect to Redis
         await Migrator().run()

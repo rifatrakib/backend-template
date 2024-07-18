@@ -22,6 +22,11 @@ async def create_user(session: AsyncSession, payload: SignupRequest) -> Account:
         password_manager.generate_hashed_password(hash_salt, payload.password),
     )
 
+    if payload.gender:
+        account.set_gender(payload.gender)
+    if payload.birth_date:
+        account.set_birth_date(payload.birth_date)
+
     try:
         session.add(account)
         await session.commit()

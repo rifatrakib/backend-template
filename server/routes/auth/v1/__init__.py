@@ -1,12 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
 from server.dependencies.clients import get_session
 from server.dependencies.form import signup_form
+from server.events.auth.signup import signup_success_event
 from server.routes.auth.v1 import controllers
 from server.schemas.requests.auth import SignupRequest
 from server.schemas.responses.accounts import AccountResponse
@@ -39,11 +40,14 @@ def create_router():
         response_description="Registration successful message",
     )
     async def register_user(
+        tasks: BackgroundTasks,
         session: Annotated[AsyncSession, Depends(get_session)],
         payload: Annotated[SignupRequest, Depends(signup_form)],
     ) -> AccountResponse:
         try:
-            return await controllers.register_user(session, payload)
+            account = await controllers.register_user(session, payload)
+            tasks.add_task(signup_success_event, account)
+            return account
         except HTTPException as e:
             raise e
 

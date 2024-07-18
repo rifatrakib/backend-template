@@ -77,8 +77,8 @@ class Account(Base):
         elif self._gender == Genders.FEMALE:
             return Genders.FEMALE
 
-    def set_gender(self, gender: Genders) -> None:
-        self._gender = gender.value
+    def set_gender(self, gender: str) -> None:
+        self._gender = gender
 
     @property
     def birth_date(self) -> date:
