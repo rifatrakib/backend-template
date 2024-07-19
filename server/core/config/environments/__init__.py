@@ -20,6 +20,17 @@ class AppConfig(ConfigSource, DatabaseConfig):
     PASSWORD_HASH_ALGORITHM: str
     HASH_ROUNDS: int
 
+    # Mail Configurations
+    MAIL_USERNAME: EmailStr | str
+    MAIL_PASSWORD: str
+    MAIL_FROM: EmailStr
+    MAIL_PORT: int
+    MAIL_SERVER: str
+    MAIL_FROM_NAME: str
+    MAIL_STARTTLS: bool
+    MAIL_SSL_TLS: bool
+    USE_CREDENTIALS: bool
+
     @field_validator("API_PREFIX")
     @classmethod
     def validate_api_prefix(cls, value: str) -> str:

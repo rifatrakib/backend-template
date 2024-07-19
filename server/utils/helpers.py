@@ -1,4 +1,9 @@
 import re
+from urllib.parse import urlparse
+
+from fastapi import Request
+
+from server.utils.exceptions import RequestValidationError
 
 
 def validate_password_pattern(password: str) -> str:
@@ -15,3 +20,12 @@ def validate_password_pattern(password: str) -> str:
             " digit and one special character."
         )
     return password
+
+
+def extract_request_domain(request: Request) -> str:
+    referer = request.headers.get("Referer", None)
+    if referer:
+        parsed_url = urlparse(referer)
+        return f"{parsed_url.scheme}://{parsed_url.netloc}"
+    else:
+        raise RequestValidationError("Referer header is missing.")
