@@ -1,13 +1,14 @@
 from fastapi import BackgroundTasks, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from server.core.models.sql.accounts import Account
+from server.core.config import settings
 from server.core.schemas.utilities import MessageResponse
 from server.events.auth.signup import signup_success_event
 from server.repositories.auth.create import create_user
 from server.repositories.auth.read import get_account_by_email, get_account_by_username
 from server.schemas.requests.auth import SignupRequest
 from server.utils.exceptions import ConflictError
+from server.utils.mail.links import get_account_activation_link
 from server.utils.mail.tasks import send_activation_mail
 
 
@@ -20,7 +21,7 @@ async def register_user(
     queue: BackgroundTasks,
     session: AsyncSession,
     payload: SignupRequest,
-) -> Account:
+) -> str:
     is_username_available = await get_account_by_username(session, payload.username)
     if is_username_available:
         raise ConflictError("Provided username already used by another account.")
@@ -32,7 +33,11 @@ async def register_user(
     try:
         account = await create_user(session, payload)
         queue.add_task(signup_success_event, account)
-        queue.add_task(send_activation_mail, request, account)
-        return account
+        if settings.SEND_MAIL:
+            queue.add_task(send_activation_mail, request, account)
+            return "Please check your mail to activate your account."
+
+        url = await get_account_activation_link(request, account)
+        return f"Please visit {url} to activate your account"
     except ConflictError as e:
         raise e

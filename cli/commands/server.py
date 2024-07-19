@@ -1,17 +1,19 @@
 import subprocess
 
-import typer
+from typer import Option, Typer
 
 from server.core.config import settings
 
-app = typer.Typer()
+app = Typer()
 
 
 @app.command(name="start")
-def start_server():
+def start_server(build: bool = Option(True)):
     if settings.TEST_RUN:
         subprocess.run("uvicorn server.main:app --reload", shell=True)
-    subprocess.run("docker-compose up --build", shell=True)
+
+    command = "docker compose up --build" if build else "docker compose up"
+    subprocess.run(command, shell=True)
 
 
 @app.command(name="stop")

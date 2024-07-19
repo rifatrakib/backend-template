@@ -1,6 +1,6 @@
 from datetime import date
 
-from pydantic import Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
 from server.core.enums import Genders
 from server.core.schemas import BaseRequestSchema
@@ -10,14 +10,31 @@ from server.utils.helpers import validate_password_pattern
 
 
 class SignupRequest(BaseRequestSchema):
-    username: str = username_field(Field)
+    username: str = username_field(Field, pattern=r"^[a-zA-Z0-9_]{4,64}$")
     email: str = email_field(Field)
     password: str = password_field(Field)
-    first_name: str = name_field(Field, "first")
-    middle_name: str | None = name_field(Field, "middle", default=None)
-    last_name: str = name_field(Field, "last")
+    first_name: str = name_field(Field, "first", pattern=r"^[a-zA-Z]{2,64}$")
+    middle_name: str | None = name_field(Field, "middle", default=None, pattern=r"^[a-zA-Z]{2,256}$")
+    last_name: str = name_field(Field, "last", pattern=r"^[a-zA-Z]{2,64}$")
     gender: Genders | None = gender_field(Field, default=None)
     birth_date: date | None = birthdate_field(Field, default=None)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "username": "johndoe",
+                    "email": "mail@example.ocm",
+                    "password": "Pass@12345",  # pragma: allowlist secret
+                    "first_name": "John",
+                    "middle_name": "Smith",
+                    "last_name": "Doe",
+                    "gender": "m",
+                    "birth_date": "2014-07-19",
+                },
+            ],
+        },
+    )
 
     @field_validator("password")
     @classmethod
@@ -34,20 +51,3 @@ class SignupRequest(BaseRequestSchema):
         if v > date.today():
             raise RequestValidationError("Birth date cannot be in the future.")
         return v
-
-    @staticmethod
-    def form_example(metadata: dict[str, str]) -> dict[str, str]:
-        examples = {
-            "username": {"example": "john_doe"},
-            "email": {"example": "john.doe@example.com"},
-            "password": {"example": "Pass@1234"},
-            "first_name": {"example": "John"},
-            "middle_name": {"example": "Doe"},
-            "last_name": {"example": "Smith"},
-            "gender": {"example": "m"},
-            "birth_date": {"example": "1990-01-01"},
-        }
-
-        for key, value in examples.items():
-            metadata[key]["example"] = value["example"]
-        return metadata
