@@ -31,6 +31,19 @@ class AppConfig(ConfigSource, DatabaseConfig):
     MAIL_SSL_TLS: bool
     USE_CREDENTIALS: bool
 
+    # JWT Configurations
+    TOKEN_TYPE: str
+    # Acccess Token
+    ACCESS_TOKEN_SECRET_KEY: str
+    ACCESS_TOKEN_ALGORITHM: str
+    ACCESS_TOKEN_SUBJECT: str
+    ACCESS_TOKEN_EXPIRY: int
+    # Refresh Token
+    REFRESH_TOKEN_SECRET_KEY: str
+    REFRESH_TOKEN_ALGORITHM: str
+    REFRESH_TOKEN_SUBJECT: str
+    REFRESH_TOKEN_EXPIRY: int
+
     @field_validator("API_PREFIX")
     @classmethod
     def validate_api_prefix(cls, value: str) -> str:

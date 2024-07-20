@@ -7,7 +7,8 @@ from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
 from server.dependencies.clients import get_session
 from server.routes.auth.v1 import controllers
-from server.schemas.requests.auth import SignupRequest
+from server.schemas.requests.auth import LoginRequest, SignupRequest
+from server.schemas.responses.accounts import JWTResponse
 
 
 def create_router():
@@ -45,6 +46,21 @@ def create_router():
         try:
             message = await controllers.register_user(request, queue, session, payload)
             return {"msg": message}
+        except HTTPException as e:
+            raise e
+
+    @router.post(
+        "/login",
+        response_model=JWTResponse,
+        summary="Endpoint to sign in with active user account",
+        response_description="Login successful message",
+    )
+    async def login_active_user(
+        payload: Annotated[LoginRequest, Body()],
+        session: Annotated[AsyncSession, Depends(get_session)],
+    ) -> JWTResponse:
+        try:
+            return await controllers.login_active_user(session, payload)
         except HTTPException as e:
             raise e
 

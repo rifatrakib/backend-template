@@ -1,7 +1,8 @@
-from datetime import date
+from datetime import date, datetime
 
-from pydantic import EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field
 
+from server.core.config import settings
 from server.core.enums import Genders
 from server.core.schemas import BaseResponseSchema
 
@@ -17,3 +18,14 @@ class AccountResponse(BaseResponseSchema):
     birth_date: date | None = Field(default=None, description="Birth date of the account.")
     is_active: bool = Field(..., description="Whether the account is active.")
     is_verified: bool = Field(..., description="Whether the account is verified.")
+
+
+class JWTPayload(AccountResponse):
+    exp: datetime
+    sub: str
+
+
+class JWTResponse(BaseModel):
+    access_token: str = Field(..., description="Access token generated for successful login with short expiry")
+    refresh_token: str = Field(..., description="Refresh token generated for successful login with long expiry")
+    token_type: str = Field(settings.TOKEN_TYPE, description="Token type for identification of token decryption method")

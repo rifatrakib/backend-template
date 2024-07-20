@@ -51,3 +51,19 @@ class SignupRequest(BaseRequestSchema):
         if v > date.today():
             raise RequestValidationError("Birth date cannot be in the future.")
         return v
+
+
+class LoginRequest(BaseRequestSchema):
+    username: str = username_field(Field)
+    password: str = password_field(Field)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "username": "johndoe",
+                    "password": "Pass@12345",  # pragma: allowlist secret
+                },
+            ],
+        },
+    )
