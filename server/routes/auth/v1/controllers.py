@@ -52,3 +52,7 @@ async def login_active_user(session: AsyncSession, payload: LoginRequest) -> JWT
         return await generate_jwt(account)
     except HTTPException as e:
         raise e
+
+
+async def protected_check():
+    return MessageResponse(msg="Authentication is working on protected endpoint!")

@@ -1,10 +1,12 @@
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Request, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
+from server.dependencies.authentication import authenticate_active_user
 from server.dependencies.clients import get_session
 from server.routes.auth.v1 import controllers
 from server.schemas.requests.auth import LoginRequest, SignupRequest
@@ -27,6 +29,19 @@ def create_router():
     async def check_auth_service() -> MessageResponse:
         try:
             return await controllers.check_auth_service()
+        except HTTPException as e:
+            raise e
+
+    @router.get(
+        "/protected-check",
+        response_model=MessageResponse,
+        summary="Check if authentication is working",
+        response_description="Authentication successful",
+        dependencies=[Depends(authenticate_active_user)],
+    )
+    async def protected_check() -> MessageResponse:
+        try:
+            return await controllers.protected_check()
         except HTTPException as e:
             raise e
 
@@ -56,8 +71,23 @@ def create_router():
         response_description="Login successful message",
     )
     async def login_active_user(
-        queue: BackgroundTasks,
         payload: Annotated[LoginRequest, Body()],
+        session: Annotated[AsyncSession, Depends(get_session)],
+    ) -> JWTResponse:
+        try:
+            return await controllers.login_active_user(session, payload)
+        except HTTPException as e:
+            raise e
+
+    @router.post(
+        "/openapi-login",
+        include_in_schema=False,
+        response_model=JWTResponse,
+        summary="Endpoint only for signing in from openapi documentation pages",
+        response_description="Login successful message",
+    )
+    async def openapi_login(
+        payload: Annotated[OAuth2PasswordRequestForm, Depends()],
         session: Annotated[AsyncSession, Depends(get_session)],
     ) -> JWTResponse:
         try:

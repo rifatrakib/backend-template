@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from jose import jwt
+from jose import JWTError, jwt
+from pydantic import ValidationError
 
 from server.core.config import settings
 from server.core.models.sql.accounts import Account
@@ -57,3 +58,17 @@ async def generate_jwt(account: Account) -> JWTResponse:
     refresh_token = create_refresh_token(account_data)
     await JWTStore(refresh_token=refresh_token, **account_data.model_dump()).save()
     return JWTResponse(access_token=access_token, refresh_token=refresh_token)
+
+
+def decode_access_token(token: str) -> AccountResponse:
+    try:
+        payload = jwt.decode(
+            token=token,
+            key=settings.ACCESS_TOKEN_SECRET_KEY,
+            algorithms=[settings.ACCESS_TOKEN_ALGORITHM],
+        )
+        return AccountResponse.model_validate(payload)
+    except JWTError:
+        raise ValueError("unable to decode JWT")
+    except ValidationError:
+        raise ValueError("invalid payload in JWT")
