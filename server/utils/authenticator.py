@@ -4,6 +4,7 @@ from jose import jwt
 
 from server.core.config import settings
 from server.core.models.sql.accounts import Account
+from server.models.redis.jwt import JWTStore
 from server.schemas.responses.accounts import AccountResponse, JWTPayload, JWTResponse
 from server.utils.exceptions import NoDataFoundError, NotAuthenticatedError, NotPermittedError
 from server.utils.managers import password_manager
@@ -54,5 +55,5 @@ async def generate_jwt(account: Account) -> JWTResponse:
     account_data = AccountResponse.model_validate(account)
     access_token = create_access_token(account_data)
     refresh_token = create_refresh_token(account_data)
-    # TODO: store the refresh token with account data in redis here
+    await JWTStore(refresh_token=refresh_token, **account_data.model_dump()).save()
     return JWTResponse(access_token=access_token, refresh_token=refresh_token)

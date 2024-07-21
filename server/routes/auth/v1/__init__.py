@@ -56,6 +56,7 @@ def create_router():
         response_description="Login successful message",
     )
     async def login_active_user(
+        queue: BackgroundTasks,
         payload: Annotated[LoginRequest, Body()],
         session: Annotated[AsyncSession, Depends(get_session)],
     ) -> JWTResponse:
