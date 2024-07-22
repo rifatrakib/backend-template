@@ -8,6 +8,7 @@ from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
 from server.dependencies.authentication import authenticate_active_user
 from server.dependencies.clients import get_session
+from server.dependencies.requests import temporary_key
 from server.routes.auth.v1 import controllers
 from server.schemas.requests.auth import LoginRequest, SignupRequest
 from server.schemas.responses.accounts import JWTResponse
@@ -59,8 +60,7 @@ def create_router():
         session: Annotated[AsyncSession, Depends(get_session)],
     ) -> MessageResponse:
         try:
-            message = await controllers.register_user(request, queue, session, payload)
-            return {"msg": message}
+            return await controllers.register_user(request, queue, session, payload)
         except HTTPException as e:
             raise e
 
@@ -92,6 +92,35 @@ def create_router():
     ) -> JWTResponse:
         try:
             return await controllers.login_active_user(session, payload)
+        except HTTPException as e:
+            raise e
+
+    @router.get(
+        "/activate",
+        status_code=status.HTTP_204_NO_CONTENT,
+        summary="Endpoint to check if account activation link is valid",
+        response_description="Valid activation link message",
+    )
+    async def check_activation_link(key: Annotated[str, temporary_key]):
+        try:
+            await controllers.check_activation_link(key)
+        except HTTPException as e:
+            raise e
+
+    @router.post(
+        "/activate",
+        response_model=MessageResponse,
+        summary="Endpoint to activate user account",
+        response_description="Account activation successful message",
+    )
+    async def activate_account(
+        request: Request,
+        queue: BackgroundTasks,
+        key: Annotated[str, Depends(temporary_key)],
+        session: Annotated[AsyncSession, Depends(get_session)],
+    ) -> MessageResponse:
+        try:
+            return await controllers.activate_account(request, queue, session, key)
         except HTTPException as e:
             raise e
 

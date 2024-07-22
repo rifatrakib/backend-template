@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from server.core.config import settings
 from server.core.schemas.utilities import MessageResponse
 from server.events.auth.signup import signup_success_event
+from server.repositories.auth.cache import check_activation_link_key, read_cached_account_data
 from server.repositories.auth.create import create_user
 from server.repositories.auth.read import get_account_by_email, get_account_by_email_or_username, get_account_by_username
 from server.schemas.requests.auth import LoginRequest, SignupRequest
@@ -11,7 +12,7 @@ from server.schemas.responses.accounts import JWTResponse
 from server.utils.authenticator import authenticate_user, generate_jwt
 from server.utils.exceptions import ConflictError
 from server.utils.mail.links import get_account_activation_link
-from server.utils.mail.tasks import send_activation_mail
+from server.utils.mail.tasks import send_activation_mail, send_activation_successful_mail
 
 
 async def check_auth_service() -> MessageResponse:
@@ -23,7 +24,7 @@ async def register_user(
     queue: BackgroundTasks,
     session: AsyncSession,
     payload: SignupRequest,
-) -> str:
+) -> MessageResponse:
     is_username_available = await get_account_by_username(session, payload.username)
     if is_username_available:
         raise ConflictError("Provided username already used by another account.")
@@ -32,17 +33,12 @@ async def register_user(
     if is_email_available:
         raise ConflictError("Provided email address already used by another account.")
 
-    try:
-        account = await create_user(session, payload)
-        queue.add_task(signup_success_event, account)
-        if settings.SEND_MAIL:
-            queue.add_task(send_activation_mail, request, account)
-            return "Please check your mail to activate your account."
+    if settings.SEND_MAIL:
+        queue.add_task(send_activation_mail, request, payload)
+        return MessageResponse(msg="Please check your mail to activate your account.")
 
-        url = await get_account_activation_link(request, account)
-        return f"Please visit {url} to activate your account"
-    except ConflictError as e:
-        raise e
+    url = await get_account_activation_link(request, payload)
+    return MessageResponse(msg=f"Please visit {url} to activate your account")
 
 
 async def login_active_user(session: AsyncSession, payload: LoginRequest) -> JWTResponse:
@@ -56,3 +52,29 @@ async def login_active_user(session: AsyncSession, payload: LoginRequest) -> JWT
 
 async def protected_check():
     return MessageResponse(msg="Authentication is working on protected endpoint!")
+
+
+async def check_activation_link(key: str):
+    try:
+        await check_activation_link_key(key)
+    except HTTPException as e:
+        raise e
+
+
+async def activate_account(
+    request: Request,
+    queue: BackgroundTasks,
+    session: AsyncSession,
+    key: str,
+) -> MessageResponse:
+    try:
+        account_data = await read_cached_account_data(key)
+        account = await create_user(session, account_data)
+        queue.add_task(signup_success_event, account)
+
+        if settings.SEND_MAIL:
+            queue.add_task(send_activation_successful_mail, request, account)
+
+        return MessageResponse(msg="Account activation successful.")
+    except HTTPException as e:
+        raise e

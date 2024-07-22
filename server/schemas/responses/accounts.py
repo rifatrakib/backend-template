@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_serializer
 
 from server.core.config import settings
 from server.core.enums import Genders
@@ -18,6 +18,10 @@ class AccountResponse(BaseResponseSchema):
     birth_date: date | None = Field(default=None, description="Birth date of the account.")
     is_active: bool = Field(..., description="Whether the account is active.")
     is_verified: bool = Field(..., description="Whether the account is verified.")
+
+    @field_serializer("birth_date", when_used="always")
+    def serialize_birthdate(self, v: date) -> str:
+        return str(v)
 
 
 class JWTPayload(AccountResponse):

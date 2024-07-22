@@ -24,7 +24,7 @@ class SignupRequest(BaseRequestSchema):
             "examples": [
                 {
                     "username": "johndoe",
-                    "email": "mail@example.ocm",
+                    "email": "mail@example.com",
                     "password": "Pass@12345",  # pragma: allowlist secret
                     "first_name": "John",
                     "middle_name": "Smith",

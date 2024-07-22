@@ -15,5 +15,17 @@ async def send_activation_mail(request: Request, account: Account) -> None:
             "subject": f"Account activation for {account.first_name} {account.last_name}",
         },
         recipients=[account.email],
-        template_name="activation.html",
+        template_name="account-activation.html",
+    )
+
+
+async def send_activation_successful_mail(request: Request, account: Account) -> None:
+    await send_mail(
+        context={
+            "request": request,
+            "username": account.username,
+            "subject": "Account activation successful",
+        },
+        recipients=[account.email],
+        template_name="account-activated.html",
     )

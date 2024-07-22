@@ -14,6 +14,7 @@ async def create_user(session: AsyncSession, payload: SignupRequest) -> Account:
         first_name=payload.first_name,
         middle_name=payload.middle_name,
         last_name=payload.last_name,
+        is_active=True,
     )
 
     hash_salt = password_manager.generate_hash_salt()
