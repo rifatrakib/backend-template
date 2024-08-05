@@ -9,9 +9,22 @@ from server.utils.exceptions import RequestValidationError
 from server.utils.helpers import validate_password_pattern
 
 
-class SignupRequest(BaseRequestSchema):
-    username: str = username_field(Field, pattern=r"^[a-zA-Z0-9_]{4,64}$")
+class EmailBodyInput(BaseRequestSchema):
     email: str = email_field(Field)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "email": "test@example.io",
+                },
+            ],
+        },
+    )
+
+
+class SignupRequest(EmailBodyInput):
+    username: str = username_field(Field, pattern=r"^[a-zA-Z0-9_]{4,64}$")
     password: str = password_field(Field)
     first_name: str = name_field(Field, "first", pattern=r"^[a-zA-Z]{2,64}$")
     middle_name: str | None = name_field(Field, "middle", default=None, pattern=r"^[a-zA-Z]{2,256}$")

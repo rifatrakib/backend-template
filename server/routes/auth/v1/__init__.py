@@ -10,7 +10,7 @@ from server.dependencies.authentication import authenticate_active_user
 from server.dependencies.clients import get_session
 from server.dependencies.requests import temporary_key
 from server.routes.auth.v1 import controllers
-from server.schemas.requests.auth import LoginRequest, SignupRequest
+from server.schemas.requests.auth import EmailBodyInput, LoginRequest, SignupRequest
 from server.schemas.responses.accounts import JWTResponse
 
 
@@ -121,6 +121,23 @@ def create_router():
     ) -> MessageResponse:
         try:
             return await controllers.activate_account(request, queue, session, key)
+        except HTTPException as e:
+            raise e
+
+    @router.post(
+        "/activate/resend",
+        response_model=MessageResponse,
+        summary="Resend account activation email if email is registered but account is inactive",
+        response_description="Resend activation mail successful message",
+    )
+    async def resend_account_activation_mail(
+        request: Request,
+        queue: BackgroundTasks,
+        payload: Annotated[EmailBodyInput, Body()],
+        session: Annotated[AsyncSession, Depends(get_session)],
+    ) -> MessageResponse:
+        try:
+            return await controllers.resend_account_activation_mail(request, queue, payload, session)
         except HTTPException as e:
             raise e
 

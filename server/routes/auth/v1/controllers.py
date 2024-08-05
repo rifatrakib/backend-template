@@ -11,9 +11,8 @@ from server.repositories.auth.update import activate_account_status
 from server.schemas.requests.auth import LoginRequest, SignupRequest
 from server.schemas.responses.accounts import JWTResponse
 from server.utils.authenticator import authenticate_user, generate_jwt
-from server.utils.exceptions import ConflictError
-from server.utils.mail.links import get_account_activation_link
-from server.utils.mail.tasks import send_activation_mail, send_activation_successful_mail
+from server.utils.exceptions import BadRequestError, ConflictError, NoDataFoundError
+from server.utils.mail.tasks import process_account_activation, send_activation_successful_mail
 
 
 async def check_auth_service() -> MessageResponse:
@@ -37,13 +36,7 @@ async def register_user(
     try:
         account = await create_user(session, payload)
         queue.add_task(signup_success_event, account)
-
-        if settings.SEND_MAIL:
-            queue.add_task(send_activation_mail, request, account)
-            return MessageResponse(msg="Please check your mail to activate your account.")
-
-        url = await get_account_activation_link(request, account)
-        return MessageResponse(msg=f"Please visit {url} to activate your account")
+        return await process_account_activation(request, queue, account)
     except HTTPException as e:
         raise e
 
@@ -82,5 +75,22 @@ async def activate_account(
             queue.add_task(send_activation_successful_mail, request, account)
 
         return MessageResponse(msg="Account activation successful.")
+    except HTTPException as e:
+        raise e
+
+
+async def resend_account_activation_mail(
+    request: Request,
+    queue: BackgroundTasks,
+    payload: SignupRequest,
+    session: AsyncSession,
+):
+    try:
+        account = await get_account_by_email(session, payload.email)
+        if not account:
+            raise NoDataFoundError("No account found with the provided email address.")
+        if account.is_active:
+            raise BadRequestError("Account is already active.")
+        return await process_account_activation(request, queue, account)
     except HTTPException as e:
         raise e
