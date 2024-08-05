@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
+from aredis_om.model.model import NotFoundError
 from jose import JWTError, jwt
 from pydantic import ValidationError
 
@@ -52,12 +54,17 @@ def create_refresh_token(data: AccountResponse) -> str:
     )
 
 
-async def generate_jwt(account: Account) -> JWTResponse:
-    account_data = AccountResponse.model_validate(account)
+async def get_jwt(data: Any) -> tuple[JWTResponse, AccountResponse]:
+    account_data = AccountResponse.model_validate(data)
     access_token = create_access_token(account_data)
     refresh_token = create_refresh_token(account_data)
-    await JWTStore(refresh_token=refresh_token, **account_data.model_dump()).save()
-    return JWTResponse(access_token=access_token, refresh_token=refresh_token)
+    return JWTResponse(access_token=access_token, refresh_token=refresh_token), account_data
+
+
+async def generate_jwt(account: Account) -> JWTResponse:
+    jwt, account_data = await get_jwt(account)
+    await JWTStore(refresh_token=jwt.refresh_token, **account_data.model_dump()).save()
+    return jwt
 
 
 def decode_access_token(token: str) -> AccountResponse:
@@ -72,3 +79,14 @@ def decode_access_token(token: str) -> AccountResponse:
         raise ValueError("unable to decode JWT")
     except ValidationError:
         raise ValueError("invalid payload in JWT")
+
+
+async def generate_jwt_from_refresh_token(token: str) -> JWTResponse:
+    try:
+        payload = await JWTStore.get(token)
+        await JWTStore.delete(token)
+        jwt, account_data = await get_jwt(payload)
+        await JWTStore(**account_data.model_dump()).save()
+        return jwt
+    except NotFoundError:
+        raise NoDataFoundError("Invalid refresh token")

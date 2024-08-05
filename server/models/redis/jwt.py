@@ -1,3 +1,4 @@
+from aredis_om import Field
 from pydantic import field_validator
 
 from server.core.models.redis import BaseCache, TimestampMixin
@@ -7,7 +8,7 @@ from server.schemas.responses.accounts import AccountResponse
 class JWTStore(BaseCache, TimestampMixin, AccountResponse):
     is_active: int
     is_verified: int
-    refresh_token: str
+    refresh_token: str = Field(primary_key=True)
 
     @field_validator("is_active", "is_verified", mode="before")
     @classmethod

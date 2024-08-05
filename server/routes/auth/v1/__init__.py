@@ -8,7 +8,7 @@ from server.core.enums import Tags
 from server.core.schemas.utilities import MessageResponse
 from server.dependencies.authentication import authenticate_active_user
 from server.dependencies.clients import get_session
-from server.dependencies.requests import temporary_key
+from server.dependencies.requests import refresh_token, temporary_key
 from server.routes.auth.v1 import controllers
 from server.schemas.requests.auth import EmailBodyInput, LoginRequest, SignupRequest
 from server.schemas.responses.accounts import JWTResponse
@@ -92,6 +92,20 @@ def create_router():
     ) -> JWTResponse:
         try:
             return await controllers.login_active_user(session, payload)
+        except HTTPException as e:
+            raise e
+
+    @router.post(
+        "/refresh",
+        response_model=JWTResponse,
+        summary="Refresh expired access token from authorization header",
+        response_description="Renewed access and refresh tokens",
+    )
+    async def refresh(
+        token: Annotated[str, Depends(refresh_token)],
+    ) -> JWTResponse:
+        try:
+            return await controllers.refresh(token)
         except HTTPException as e:
             raise e
 

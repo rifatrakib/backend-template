@@ -10,13 +10,17 @@ from server.repositories.auth.read import get_account_by_email, get_account_by_e
 from server.repositories.auth.update import activate_account_status
 from server.schemas.requests.auth import LoginRequest, SignupRequest
 from server.schemas.responses.accounts import JWTResponse
-from server.utils.authenticator import authenticate_user, generate_jwt
+from server.utils.authenticator import authenticate_user, generate_jwt, generate_jwt_from_refresh_token
 from server.utils.exceptions import BadRequestError, ConflictError, NoDataFoundError
 from server.utils.mail.tasks import process_account_activation, send_activation_successful_mail
 
 
 async def check_auth_service() -> MessageResponse:
     return MessageResponse(msg="Auth service is up and running!")
+
+
+async def protected_check():
+    return MessageResponse(msg="Authentication is working on protected endpoint!")
 
 
 async def register_user(
@@ -50,8 +54,11 @@ async def login_active_user(session: AsyncSession, payload: LoginRequest) -> JWT
         raise e
 
 
-async def protected_check():
-    return MessageResponse(msg="Authentication is working on protected endpoint!")
+async def refresh(token: str) -> JWTResponse:
+    try:
+        return await generate_jwt_from_refresh_token(token)
+    except HTTPException as e:
+        raise e
 
 
 async def check_activation_link(key: str):
