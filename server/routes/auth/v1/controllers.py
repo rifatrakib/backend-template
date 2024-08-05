@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from server.core.config import settings
 from server.core.schemas.utilities import MessageResponse
 from server.events.auth.signup import signup_success_event
+from server.models.redis.jwt import JWTStore
 from server.repositories.auth.cache import read_activation_cache
 from server.repositories.auth.create import create_user
 from server.repositories.auth.read import get_account_by_email, get_account_by_email_or_username, get_account_by_username
@@ -59,6 +60,10 @@ async def refresh(token: str) -> JWTResponse:
         return await generate_jwt_from_refresh_token(token)
     except HTTPException as e:
         raise e
+
+
+async def logout(token: str):
+    await JWTStore.delete(token)
 
 
 async def check_activation_link(key: str):

@@ -101,11 +101,21 @@ def create_router():
         summary="Refresh expired access token from authorization header",
         response_description="Renewed access and refresh tokens",
     )
-    async def refresh(
-        token: Annotated[str, Depends(refresh_token)],
-    ) -> JWTResponse:
+    async def refresh(token: Annotated[str, Depends(refresh_token)]) -> JWTResponse:
         try:
             return await controllers.refresh(token)
+        except HTTPException as e:
+            raise e
+
+    @router.post(
+        "/logout",
+        status_code=status.HTTP_204_NO_CONTENT,
+        summary="Endpoint to signout a logged in user",
+        response_description="Logout successful",
+    )
+    async def logout(token: Annotated[str, Depends(refresh_token)]):
+        try:
+            await controllers.logout(token)
         except HTTPException as e:
             raise e
 
