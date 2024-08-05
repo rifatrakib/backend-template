@@ -4,9 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from server.core.config import settings
 from server.core.schemas.utilities import MessageResponse
 from server.events.auth.signup import signup_success_event
-from server.repositories.auth.cache import check_activation_link_key, read_cached_account_data
+from server.repositories.auth.cache import read_activation_cache
 from server.repositories.auth.create import create_user
 from server.repositories.auth.read import get_account_by_email, get_account_by_email_or_username, get_account_by_username
+from server.repositories.auth.update import activate_account_status
 from server.schemas.requests.auth import LoginRequest, SignupRequest
 from server.schemas.responses.accounts import JWTResponse
 from server.utils.authenticator import authenticate_user, generate_jwt
@@ -33,12 +34,18 @@ async def register_user(
     if is_email_available:
         raise ConflictError("Provided email address already used by another account.")
 
-    if settings.SEND_MAIL:
-        queue.add_task(send_activation_mail, request, payload)
-        return MessageResponse(msg="Please check your mail to activate your account.")
+    try:
+        account = await create_user(session, payload)
+        queue.add_task(signup_success_event, account)
 
-    url = await get_account_activation_link(request, payload)
-    return MessageResponse(msg=f"Please visit {url} to activate your account")
+        if settings.SEND_MAIL:
+            queue.add_task(send_activation_mail, request, account)
+            return MessageResponse(msg="Please check your mail to activate your account.")
+
+        url = await get_account_activation_link(request, account)
+        return MessageResponse(msg=f"Please visit {url} to activate your account")
+    except HTTPException as e:
+        raise e
 
 
 async def login_active_user(session: AsyncSession, payload: LoginRequest) -> JWTResponse:
@@ -56,7 +63,7 @@ async def protected_check():
 
 async def check_activation_link(key: str):
     try:
-        await check_activation_link_key(key)
+        await read_activation_cache(key)
     except HTTPException as e:
         raise e
 
@@ -68,9 +75,8 @@ async def activate_account(
     key: str,
 ) -> MessageResponse:
     try:
-        account_data = await read_cached_account_data(key)
-        account = await create_user(session, account_data)
-        queue.add_task(signup_success_event, account)
+        activation_cache = await read_activation_cache(key)
+        account = await activate_account_status(session, activation_cache.id)
 
         if settings.SEND_MAIL:
             queue.add_task(send_activation_successful_mail, request, account)

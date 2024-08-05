@@ -20,8 +20,8 @@ class AccountResponse(BaseResponseSchema):
     is_verified: bool = Field(..., description="Whether the account is verified.")
 
     @field_serializer("birth_date", when_used="always")
-    def serialize_birthdate(self, v: date) -> str:
-        return str(v)
+    def serialize_birthdate(self, v: date | None) -> str | None:
+        return str(v) if v else None
 
 
 class JWTPayload(AccountResponse):

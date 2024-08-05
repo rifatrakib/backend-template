@@ -5,7 +5,7 @@ from server.core.enums import Modes
 class DevelopmentConfig(AppConfig):
     MODE: Modes = Modes.DEVELOPMENT
     DEBUG: bool = True
-    SEND_MAIL: bool = True
+    SEND_MAIL: bool = False
 
     # Cache TTL settings
     ACCOUNT_ACTIVATION_TTL: int = 60
