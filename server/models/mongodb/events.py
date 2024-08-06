@@ -3,7 +3,6 @@ from beanie import Granularity, TimeSeriesConfig
 from pydantic import Field, field_validator
 from pymongo import IndexModel
 
-from server.core.config import settings
 from server.core.models.mongodb import BaseDocument
 from server.core.schemas import BaseSchema
 from server.core.schemas.utilities import MetadataField
@@ -19,7 +18,6 @@ class RequestLog(BaseDocument):
     status_code: int | None = Field(None, description="Status code of the response")
     client_ip: str | None = Field(None, description="Client IP address from which the request was made")
     error_response: dict | None = Field(None, description="Error response in case of an error")
-    resources: list | None = Field(None, description="Resources used in the request")
     metadata: MetadataField = Field(default_factory=dict)
 
     class Settings:
@@ -29,14 +27,6 @@ class RequestLog(BaseDocument):
             IndexModel([("client_ip", pymongo.ASCENDING)]),
             IndexModel([("status_code", pymongo.ASCENDING)]),
         ]
-        timeseries = TimeSeriesConfig(
-            time_field="created_at",
-            meta_field="metadata",
-            granularity=Granularity.seconds,
-            bucket_max_span_seconds=settings.BUCKET_MAX_SPAN_SECONDS,
-            bucket_rounding_seconds=settings.BUCKET_ROUNDING_SECONDS,
-            expire_after_seconds=settings.EXPIRE_AFTER_SECONDS,
-        )
 
 
 class ChangeLog(BaseDocument):

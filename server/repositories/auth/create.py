@@ -1,6 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from server.core.models.mongodb.accounts import AccountCache
 from server.core.models.sql.accounts import Account
 from server.schemas.requests.auth import SignupRequest
 from server.utils.exceptions import ConflictError
@@ -35,3 +36,20 @@ async def create_user(session: AsyncSession, payload: SignupRequest) -> Account:
     except IntegrityError as e:
         await session.rollback()
         raise ConflictError(e.args[0])
+
+
+async def create_account_cache(payload: Account) -> None:
+    account = AccountCache(
+        account_id=payload.id,
+        username=payload.username,
+        email=payload.email,
+        first_name=payload.first_name,
+        middle_name=payload.middle_name,
+        last_name=payload.last_name,
+        birth_date=payload.birth_date,
+        gender=payload.gender,
+        is_active=payload.is_active,
+        is_verified=payload.is_verified,
+        is_superuser=payload.is_superuser,
+    )
+    await account.save()
