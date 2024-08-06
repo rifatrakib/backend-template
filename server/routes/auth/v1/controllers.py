@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from server.core.config import settings
 from server.core.schemas.utilities import MessageResponse
-from server.events.auth.signup import signup_success_event
+from server.events.auth.signup import account_activation_success_event, signup_success_event
 from server.models.redis.jwt import JWTStore
 from server.repositories.auth.cache import read_activation_cache
 from server.repositories.auth.create import create_user
@@ -49,7 +49,10 @@ async def register_user(
 async def login_active_user(session: AsyncSession, payload: LoginRequest) -> JWTResponse:
     try:
         account = await get_account_by_email_or_username(session, payload.username)
-        authenticate_user(account, payload.username, payload.password)
+        if not account:
+            raise NoDataFoundError(f"No account registered for {payload.username}.")
+
+        authenticate_user(account, payload.password)
         return await generate_jwt(account)
     except HTTPException as e:
         raise e
@@ -82,6 +85,7 @@ async def activate_account(
     try:
         activation_cache = await read_activation_cache(key)
         account = await activate_account_status(session, activation_cache.id)
+        queue.add_task(account_activation_success_event, account)
 
         if settings.SEND_MAIL:
             queue.add_task(send_activation_successful_mail, request, account)

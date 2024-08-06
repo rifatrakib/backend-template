@@ -10,7 +10,7 @@ from server.middlewares.logging import logging_middleware
 def configure_app() -> FastAPI:
     api_config: OpenAPIConfig = configure_openapi()
     app = FastAPI(**api_config.model_dump(), lifespan=app_startup)
-    app.middleware(
+    app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_credentials=True,

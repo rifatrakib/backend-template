@@ -13,10 +13,7 @@ from server.utils.exceptions import NoDataFoundError, NotAuthenticatedError, Not
 from server.utils.managers import password_manager
 
 
-def authenticate_user(account: Account | None, username: str, password: str) -> bool:
-    if not account:
-        raise NoDataFoundError(f"No account registered for {username}.")
-
+def authenticate_user(account: Account | None, password: str) -> bool:
     if not account.is_active:
         raise NotPermittedError("Account not active. Please activate your account with email.")
 

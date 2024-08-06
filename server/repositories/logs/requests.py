@@ -1,17 +1,10 @@
-from json.decoder import JSONDecodeError
-
 from fastapi import Request, Response
 
 from server.core.config import settings
 from server.models.mongodb.events import RequestLog
 
 
-async def create_public_request_log(request: Request, response: Response):
-    try:
-        body = await request.json()
-    except JSONDecodeError:
-        body = None
-
+async def create_public_request_log(request: Request, response: Response, body: dict | list | None = None):
     log = RequestLog(
         endpoint=request.url.path,
         method=request.method,

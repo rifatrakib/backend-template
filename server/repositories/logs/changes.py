@@ -14,3 +14,11 @@ async def account_insert_log(account: Account):
         new_value=AccountResponse.model_validate(account),
     )
     await log.save()
+
+
+async def account_update_log(account: Account):
+    last_log = await ChangeLog.find(ChangeLog.account_id == account.id).sort(ChangeLog.created_at, -1).first_or_none()
+    if last_log:
+        last_log.old_value = last_log.new_value
+        last_log.new_value = AccountResponse.model_validate(account)
+        await last_log.save()

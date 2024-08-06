@@ -1,6 +1,6 @@
 from datetime import date
 
-from pydantic import ConfigDict, Field, field_validator
+from pydantic import ConfigDict, EmailStr, Field, field_validator
 
 from server.core.enums import Genders
 from server.core.schemas import BaseRequestSchema
@@ -10,7 +10,7 @@ from server.utils.helpers import validate_password_pattern
 
 
 class EmailBodyInput(BaseRequestSchema):
-    email: str = email_field(Field)
+    email: EmailStr = email_field(Field)
 
     model_config = ConfigDict(
         json_schema_extra={
